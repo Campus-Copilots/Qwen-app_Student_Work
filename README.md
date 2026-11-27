@@ -6,7 +6,7 @@
 
 ### 1. 克隆仓库
 ```bash
-git clone https://github.com/IceContainor/Qwen-app_Student_Work.git
+git clone https://github.com/Campus-Copilots/Qwen-app_Student_Work.git
 cd Qwen-app_Student_Work
 ```
 
