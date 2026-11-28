@@ -1,9 +1,7 @@
 import requests
 
-
-# 1. 最基础的获取天气数据的函数
-def get_weather_data(city_code="101120201"): #在这里可以修改城市代码，后续看看能不能做成定位获取城市代码
-    # 101120201 是青岛的代码，你要查别的城市去网上搜对应的代码
+# 1. 基础获取天气函数（接收地区代码）
+def get_weather_data(city_code="101110101"):
     try:
         url = f"http://t.weather.itboy.net/api/weather/city/{city_code}"
         res = requests.get(url, timeout=5)
@@ -21,50 +19,45 @@ def get_weather_data(city_code="101120201"): #在这里可以修改城市代码�
         return None, None, None, None
 
 
-# 2. 生成紧凑版 HTML 卡片（用于界面右上角）
-def generate_weather_html(city="青岛"):
-    current_temp, high, low, weather_type = get_weather_data()
-
-    if current_temp is None:
-        return f"<div style='color: #ef4444; padding: 5px; font-size: 0.8rem;'>⚠️ 天气获取失败</div>"
-
+# 2. 生成漂亮的 HTML 卡片（用于顶部展示）
+def get_beautiful_weather_html(city_name, current_temp, high, low, weather_type):
     icon = "🌤️"
-    if "晴" in weather_type:
-        icon = "☀️"
-    elif "雨" in weather_type:
-        icon = "🌧️"
-    elif "阴" in weather_type or "云" in weather_type:
-        icon = "☁️"
+    if "晴" in weather_type: icon = "☀️"
+    elif "雨" in weather_type: icon = "🌧️"
+    elif "阴" in weather_type or "云" in weather_type: icon = "☁️"
 
-    html_content = f"""
+    temp_clean = str(current_temp).replace("°C", "").replace("℃", "")
+
+    # 🌟 完美版 HTML 卡片
+    html = f"""
     <div style="
-        display: inline-flex; 
-        align-items: center; 
-        background: #f8f9fa; 
-        border-radius: 8px; 
-        padding: 5px 12px; 
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #e5e7eb;
-        font-family: Arial, sans-serif;
+        display: flex; align-items: center; justify-content: space-between;
+        background: #f8f9fa; padding: 12px 18px; border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: Arial, sans-serif;
+        width: 100%; box-sizing: border-box; border: 1px solid #e5e7eb;
     ">
-        <div style="font-size: 1.5rem; margin-right: 8px;">{icon}</div>
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="display: flex; align-items: baseline; gap: 6px;">
-                <span style="font-size: 0.9rem; font-weight: bold; color: #333;">{city}</span>
-                <span style="font-size: 1.1rem; font-weight: bold; color: #007bff;">{current_temp}°C</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 2.2rem;">{icon}</span>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <!-- 给下拉菜单留出空间，文字先隐藏，由真正的下拉框盖上来 -->
+                <div style="font-size: 1.1rem; font-weight: bold; color: transparent;">
+                    {city_name} ▼
+                </div>
+                <div style="font-size: 0.85rem; color: #666;">
+                    {weather_type} | {low} ~ {high}
+                </div>
             </div>
-            <div style="font-size: 0.75rem; color: #666; margin-top: 2px;">
-                {weather_type} | {low}~{high}
-            </div>
+        </div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: #007bff;">
+            {temp_clean}°C
         </div>
     </div>
     """
-    return html_content
+    return html
 
-
-# 3. 给大模型提供纯文本天气数据（聊天对话时用的）
-def get_weather_text_for_llm(city="青岛"):
-    current_temp, high, low, weather_type = get_weather_data()
+# 3. 给大模型提供纯文本天气数据
+def get_weather_text_for_llm(city_name="西安市", city_code="101110101"):
+    current_temp, high, low, weather_type = get_weather_data(city_code)
     if current_temp is None:
         return ""
-    return f"当前{city}的天气是：{weather_type}，气温 {current_temp}°C，最高温 {high}，最低温 {low}。"
+    return f"当前{city_name}的天气是：{weather_type}，气温 {current_temp}°C，最高温 {high}，最低温 {low}。"
